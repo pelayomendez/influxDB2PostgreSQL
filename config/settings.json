@@ -2,13 +2,13 @@
     "INFLUXDB_HOST": "raspberrypi",
     "INFLUXDB_PORT": 8086,
     "INFLUXDB_PROTOCOL": "https",
-    "INFLUXDB_DATABASE": "pla8",
-    "INFLUXDB_USERNAME": "testclient",
-    "INFLUXDB_PASSSWORD": "12345",
-    "INFLUXDB_MEASUREMENT": "temperatura",
+    "INFLUXDB_DATABASE": "",
+    "INFLUXDB_USERNAME": "",
+    "INFLUXDB_PASSSWORD": "",
+    "INFLUXDB_MEASUREMENT": "",
     "POSTGRESS_HOST": "localhost",
     "POSTGRESS_PORT": 5432,
-    "POSTGRESS_DATABASE": "test_database",
-    "POSTGRESS_USER": "admin",
-    "POSTGRESS_PASSWORD": "12345"
+    "POSTGRESS_DATABASE": "",
+    "POSTGRESS_USER": "",
+    "POSTGRESS_PASSWORD": ""
 }
