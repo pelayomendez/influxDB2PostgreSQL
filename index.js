@@ -21,11 +21,12 @@ const fs = require('fs')
 
 // Define ssl certificates
 //////////////////////////////////////////////////////////////////////////////////////////
-var rootCas = require('ssl-root-cas/latest').create();
-rootCas.addFile(__dirname + '/keys/iot-ca-selfsigned.crt');
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+//var rootCas = require('ssl-root-cas/latest').create();
+//rootCas.addFile(__dirname + '/keys/iot-ca-selfsigned.crt');
 // default for all https requests
 // (whether using https directly, request, or another module)
-require('https').globalAgent.options.ca = rootCas;
+//require('https').globalAgent.options.ca = rootCas;
 
 // InfluxDB configuration
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -37,20 +38,7 @@ const influx = new Influx.InfluxDB(
   protocol: globalAppSettings.INFLUXDB_PROTOCOL,
   database: globalAppSettings.INFLUXDB_DATABASE,
   username: globalAppSettings.INFLUXDB_USERNAME,
-  password: globalAppSettings.INFLUXDB_PASSSWORD,
-  schema: [
-    {
-      measurement: globalAppSettings.MEASUREMENT,
-      fields: 
-      {
-        time: Influx.FieldType.STRING,
-        temperatura: Influx.FieldType.FLOAT
-      },
-      tags: [
-        'host'
-      ]
-   }
- ]
+  password: globalAppSettings.INFLUXDB_PASSSWORD
 })
 
 // Postgress SQL configuration
@@ -79,38 +67,51 @@ function updateremoteDatabase()
   .catch(error => console.log({ error }))
   */
 
-  const query = `select * from temperatura WHERE time < '${actDate}' AND time >= '${lastQueryDate}'`
+  const query = `select * from ENV WHERE time < '${actDate}' AND time >= '${lastQueryDate}'`
 
-  influx.query(query)
-  .then( results => 
-  { 
-    const resultObject = {}
-    resultObject['start_time'] = lastQueryDate
-    resultObject['end_time'] = actDate
-    resultObject['data'] = []
+  try 
+  {
+    console.log(query)
+    influx.query(query)
+    .then( results => 
+    { 
+      const resultObject = {}
+      resultObject['start_time'] = lastQueryDate
+      resultObject['end_time'] = actDate
+      resultObject['data'] = []
 
-    for(let result of results)
-    {
-      const obj = {time: result.time.toNanoISOString(), value: result.value }
-      resultObject['data'].push(obj)
-    }
-
-    try 
-    {
-      const jsonData = JSON.stringify(resultObject)
-      console.log(`Found ${resultObject['data'].length} objects`)
-      if(resultObject['data'].length > 0)
+      results = results.filter(result => result.tag3 === 'Temperature')
+    
+      for(let result of results)
       {
-        postgressSQL.insertData(resultObject['start_time'], JSON.stringify(resultObject))
-        fs.writeFileSync('./config/cache.json', JSON.stringify({ latest_update: actDate }))
+        const obj = {time: result.time.toNanoISOString(), value: result.value }
+        resultObject['data'].push(obj)
       }
-      //fs.writeFileSync(`./exports/${actDate}.json`, jsonData)
-    } catch(err) {
-      // An error occurred
-      console.error(err);
-    }
-  })
-  .catch((error) => { console.log(error) } )
+
+      try 
+      {
+        const jsonData = JSON.stringify(resultObject)
+        console.log(`Found ${resultObject['data'].length} objects`)
+        if(resultObject['data'].length > 0)
+        {
+          postgressSQL.insertData(resultObject['start_time'], JSON.stringify(resultObject))
+          .then(result => {
+            fs.writeFileSync('./config/cache.json', JSON.stringify({ latest_update: actDate }))
+            console.log(result)
+          })
+          .catch(error => console.log({ error }))
+        }
+        //fs.writeFileSync(`./exports/${actDate}.json`, jsonData)
+      } catch(err) {
+        // An error occurred
+        console.error(err);
+      }
+    })
+    .catch((error) => { console.log(error) } )
+  } catch(err) {
+    // An error occurred
+    console.error(err);
+  }
 }
 
 updateremoteDatabase()

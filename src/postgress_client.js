@@ -34,22 +34,25 @@ module.exports = {
 
     insertData: function(timeStamp, jsonData)
     {
-        const db = pgp(cn); // database instance;
-        
-        db.tx(async t => 
+        return new Promise((resolve, reject) =>
         {
-            return await t.one('INSERT INTO temperatura(time, data) VALUES ($1,$2) RETURNING id', [timeStamp, jsonData]);
+            const db = pgp(cn); // database instance;
+            
+            db.tx(async t => 
+            {
+                return await t.one('INSERT INTO temperatura(time, data) VALUES ($1,$2) RETURNING id', [timeStamp, jsonData]);
+            })
+            .then((id) => {
+                // print new user id + new event id;
+                resolve('New data inserted with ID:', id);
+            })
+            .catch(error => 
+            {
+                reject('ERROR:', error); // print the error;
+            })
+            .finally(db.$pool.end); // For immediate app exit, shutting down the connection pool
+            // For details see: https://github.com/vitaly-t/pg-promise#library-de-initialization
         })
-        .then((id) => {
-            // print new user id + new event id;
-            console.log('New data inserted with ID:', id);
-        })
-        .catch(error => 
-        {
-            console.log('ERROR:', error); // print the error;
-        })
-        .finally(db.$pool.end); // For immediate app exit, shutting down the connection pool
-        // For details see: https://github.com/vitaly-t/pg-promise#library-de-initialization
     },
 
     getData: function(startIndex, endIndex)
