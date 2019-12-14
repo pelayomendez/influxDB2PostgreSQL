@@ -1,6 +1,6 @@
-# influxDB2PostgressSQL
+# influxDB2PostgreSQL
 
-This is a simple Node.js service that connects to an InfluxDB database and makes regular backups to a Postgress SQL database.
+This is a simple Node.js service that connects to an InfluxDB database and makes regular backups to a PostgreSQL database.
 
 # Installing the service
 ````
