@@ -34,5 +34,5 @@ app.get('/latest', function (req, res)
 })
 
 app.listen(4000, function () {
-  console.log('Example app listening on port 4000!');
+  console.log('iot API listening on port 4000!');
 })

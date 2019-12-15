@@ -44,7 +44,7 @@ module.exports = {
             })
             .then((id) => {
                 // print new user id + new event id;
-                resolve('New data inserted with ID:', id);
+                resolve('New data inserted');
             })
             .catch(error => 
             {

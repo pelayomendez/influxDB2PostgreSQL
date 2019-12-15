@@ -23,7 +23,7 @@ const fs = require('fs')
 //////////////////////////////////////////////////////////////////////////////////////////
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 //var rootCas = require('ssl-root-cas/latest').create();
-//rootCas.addFile(__dirname + '/keys/iot-ca-selfsigned.crt');
+//rootCas.addFile(__dirname + '/keys/influxdbca.crt');
 // default for all https requests
 // (whether using https directly, request, or another module)
 //require('https').globalAgent.options.ca = rootCas;
@@ -67,21 +67,22 @@ function updateremoteDatabase()
   .catch(error => console.log({ error }))
   */
 
-  const query = `select * from ENV WHERE time < '${actDate}' AND time >= '${lastQueryDate}'`
+  const query = `SELECT * FROM ENV WHERE time < '${actDate}' AND time >= '${lastQueryDate}'`
 
   try 
   {
     console.log(query)
     influx.query(query)
-    .then( results => 
+    .then(results => 
     { 
+      
       const resultObject = {}
       resultObject['start_time'] = lastQueryDate
       resultObject['end_time'] = actDate
       resultObject['data'] = []
 
       results = results.filter(result => result.tag3 === 'Temperature')
-    
+   
       for(let result of results)
       {
         const obj = {time: result.time.toNanoISOString(), value: result.value }
@@ -108,6 +109,7 @@ function updateremoteDatabase()
       }
     })
     .catch((error) => { console.log(error) } )
+    .finally(() => { console.log('finaly') } )
   } catch(err) {
     // An error occurred
     console.error(err);
