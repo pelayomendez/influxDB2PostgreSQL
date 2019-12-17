@@ -67,7 +67,7 @@ function updateremoteDatabase()
   .catch(error => console.log({ error }))
   */
 
-  const query = `SELECT * FROM ENV WHERE time < '${actDate}' AND time >= '${lastQueryDate}'`
+  const query = `SELECT * FROM ENV WHERE time < '${actDate}' AND time >= '${lastQueryDate}' LIMIT 100` 
 
   try 
   {
